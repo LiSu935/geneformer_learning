@@ -40,10 +40,66 @@ embs = embex.extract_embs("/mnt/pixstor/dbllab/suli/tools_related/geneformer/gen
                           prefix+"_geneformer_out")
 
 
-#File "/mnt/pixstor/data/lsxgf/miniconda/envs/py-geneformer/lib/python3.8/site-packages/huggingface_hub/utils/_validators.py", line 164, in validate_repo_id
-#    raise HFValidationError(
-#huggingface_hub.utils._validators.HFValidationError: Repo id must use alphanumeric chars or '-', '_', '.', '--' and '..' are forbidden, '-' and '.' cannot start or end the name, max length is 96: '../geneformer-12L-30M'.
+# plot UMAP of cell embeddings
+# note: scanpy umap necessarily saves figs to figures directory
+#embex.plot_embs(embs=embs, 
+#                plot_style="umap",
+#                output_directory="path/to/output_directory/",  
+#                output_prefix="emb_plot")
+
+from pathlib import Path
+import anndata
+import seaborn as sns
+
+def plot_umap(embs_df, emb_dims, label, output_file, kwargs_dict):
+    only_embs_df = embs_df.iloc[:,:emb_dims]
+    only_embs_df.index = pd.RangeIndex(0, only_embs_df.shape[0], name=None).astype(str)
+    only_embs_df.columns = pd.RangeIndex(0, only_embs_df.shape[1], name=None).astype(str)
+    vars_dict = {"embs": only_embs_df.columns}
+    obs_dict = {"cell_id": list(only_embs_df.index),
+                f"{label}": label}
+    adata = anndata.AnnData(X=only_embs_df, obs=obs_dict, var=vars_dict)
+    sc.tl.pca(adata, svd_solver='arpack')
+    sc.pp.neighbors(adata)
+    sc.tl.umap(adata)
+    sns.set(rc={'figure.figsize':(10,10)}, font_scale=2.3)
+    sns.set_style("white")
+    default_kwargs_dict = {"palette":"Set2", "size":200}
+    if kwargs_dict is not None:
+        default_kwargs_dict.update(kwargs_dict)
+        
+    sc.pl.umap(adata, color=label, save=output_file, **default_kwargs_dict)
 
 
-# what pretrained model to use? model_type?
-# Feel necessary to check the size of "only_embs_df.index" https://huggingface.co/ctheodoris/Geneformer/blob/main/geneformer/emb_extractor.py line 149
+import pandas as pd
+import scanpy as sc 
+
+label = "celltype"
+prefix = "NSCLC_subsetted"
+output_directory = "/mnt/pixstor/dbllab/suli/Alg_development/use_geneformer/data/NSCLC_subsetted/"
+output_prefix = prefix+"_geneformer_out"
+output_prefix_label = "_" + output_prefix + f"_umap_{label}"
+output_file = (Path(output_directory) / output_prefix_label).with_suffix(".pdf")
+label_list = list(sc.read_h5ad("/mnt/pixstor/dbllab/suli/Alg_development/use_geneformer/data/NSCLC_subsetted/NSCLC_subsetted_raw.h5ad").obs["cell_type"])
+embs = pd.read_csv("/mnt/pixstor/dbllab/suli/Alg_development/use_geneformer/data/NSCLC_subsetted/NSCLC_subsetted_geneformer_out.csv", header=0, index_col=0)
+
+plot_umap(embs_df=embs, emb_dims=embs.shape[1], label=label_list, output_file=output_file, kwargs_dict=None)
+
+only_embs_df = embs_df.iloc[:,:emb_dims]
+only_embs_df.index = pd.RangeIndex(0, only_embs_df.shape[0], name=None).astype(str)
+only_embs_df.columns = pd.RangeIndex(0, only_embs_df.shape[1], name=None).astype(str)
+vars_dict = {"embs": only_embs_df.columns}
+obs_dict = {"cell_id": list(only_embs_df.index),
+            "celltype": label}
+adata = anndata.AnnData(X=only_embs_df, obs=obs_dict, var=vars_dict)
+sc.tl.pca(adata, svd_solver='arpack')
+sc.pp.neighbors(adata)
+sc.tl.umap(adata)
+sns.set(rc={'figure.figsize':(10,10)}, font_scale=2.3)
+sns.set_style("white")
+default_kwargs_dict = {"palette":"Set2", "size":200}
+if kwargs_dict is not None:
+  default_kwargs_dict.update(kwargs_dict)
+  
+sc.pl.umap(adata, color="celltype", save=output_file, **default_kwargs_dict)
+
