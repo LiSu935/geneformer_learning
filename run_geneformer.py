@@ -11,6 +11,13 @@ input_dir = "/mnt/pixstor/dbllab/suli/Alg_development/use_geneformer/data/NSCLC_
 output_dir = input_dir
 prefix = "NSCLC_subsetted"
 
+
+
+input_dir = "/home/lsxgf/tem/NSCLC_subsetted_741/"
+output_dir = input_dir
+prefix = "NSCLC_subsetted_741"
+
+
 tk = TranscriptomeTokenizer(nproc=15)
 
 tk.tokenize_data(input_dir, 
