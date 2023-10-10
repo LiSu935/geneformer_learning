@@ -1,5 +1,7 @@
 #from geneformer import TranscriptomeTokenizer
-from /home/lsxgf/Geneformer/geneformer/tokenizer.py import TranscriptomeTokenizer
+import os 
+os.chdir("/home/lsxgf/Geneformer/geneformer/")
+from tokenizer import TranscriptomeTokenizer
 
 # if previously wrote the 'ensembl_id', the following might not be necessary.
 import scanpy as sc 
