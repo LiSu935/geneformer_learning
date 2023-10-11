@@ -23,7 +23,8 @@ tk.tokenize_data(input_dir,
                  file_format="h5ad")
 
 
-from geneformer import EmbExtractor
+#from geneformer import EmbExtractor
+from emb_extractor import EmbExtractor
 # initiate EmbExtractor
 embex = EmbExtractor(model_type="Pretrained",
                      num_classes=0,
