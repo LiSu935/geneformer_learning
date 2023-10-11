@@ -25,8 +25,8 @@ tk.tokenize_data(input_dir,
                  prefix, 
                  file_format="h5ad")
 
-import os 
-os.chdir("/home/lsxgf/Geneformer/geneformer/")
+import sys
+sys.path.append('/home/lsxgf/Geneformer/geneformer/')
 from emb_extractor import EmbExtractor
 # initiate EmbExtractor
 embex = EmbExtractor(model_type="Pretrained",
