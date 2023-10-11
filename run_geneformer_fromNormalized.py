@@ -1,6 +1,6 @@
 #from geneformer import TranscriptomeTokenizer
-import os 
-os.chdir("/home/lsxgf/Geneformer/geneformer/")
+import sys
+sys.path.append('/home/lsxgf/Geneformer/geneformer/')
 from tokenizer import TranscriptomeTokenizer
 
 # if previously wrote the 'ensembl_id', the following might not be necessary.
