@@ -82,13 +82,12 @@ import pandas as pd
 import scanpy as sc 
 
 label = "cell_type"
-prefix = "NSCLC_subsetted"
 output_directory = output_dir
 output_prefix = prefix+"_geneformer_out"
 output_prefix_label = "_" + output_prefix + f"_umap_{label}"
 output_file = (Path(output_directory) / output_prefix_label).with_suffix(".pdf")
 label_list = list(sc.read_h5ad("/mnt/pixstor/dbllab/suli/Alg_development/use_geneformer/data/NSCLC_subsetted/NSCLC_subsetted_raw.h5ad").obs["cell_type"])
-embs = pd.read_csv("/mnt/pixstor/dbllab/suli/Alg_development/use_geneformer/data/NSCLC_subsetted/NSCLC_subsetted_geneformer_out.csv", header=0, index_col=0)
+embs = pd.read_csv(output_dir+prefix+"_geneformer_out"+".csv", header=0, index_col=0)
 
 plot_umap(embs_df=embs, emb_dims=embs.shape[1], label=label_list, output_file=output_file, kwargs_dict=None)
 
