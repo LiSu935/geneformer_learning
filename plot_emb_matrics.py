@@ -38,7 +38,7 @@ output_prefix = prefix+"_geneformer_out"
 output_prefix_label = "_" + output_prefix + f"_umap_{label}"
 output_file = (Path(output_directory) / output_prefix_label).with_suffix(".pdf")
 # data_directory.glob("*.{}".format(file_format))
-label_list = list(sc.read_h5ad(output_directory.glob("*.{}".format("h5ad"))[0]).obs["cell_type"])
+label_list = list(sc.read_h5ad(glob.glob(output_directory+"*.{}".format("h5ad"))[0]).obs["cell_type"])
 embs = pd.read_csv(output_dir+prefix+"_geneformer_out"+".csv", header=0, index_col=0)
 
 plot_umap(embs_df=embs, emb_dims=embs.shape[1], label=label_list, output_file=output_file, kwargs_dict=None)
