@@ -13,6 +13,8 @@ import glob
 
 sc.set_figure_params(format="png")
 
+from matplotlib import pyplot as plt
+
 def plot_umap(embs_df, emb_dims, label, output_file, kwargs_dict):
     only_embs_df = embs_df.iloc[:,:emb_dims]
     only_embs_df.index = pd.RangeIndex(0, only_embs_df.shape[0], name=None).astype(str)
@@ -24,21 +26,28 @@ def plot_umap(embs_df, emb_dims, label, output_file, kwargs_dict):
     sc.tl.pca(adata, svd_solver='arpack')
     sc.pp.neighbors(adata)
     sc.tl.umap(adata)
+    sc.tl.louvain(adata)
     sns.set(rc={'figure.figsize':(10,10)}, font_scale=2.3)
     sns.set_style("white")
     default_kwargs_dict = {"palette":"Set2", "size":200}
     if kwargs_dict is not None:
-      default_kwargs_dict.update(kwargs_dict)
-    sc.pl.umap(adata, color="cell_type", save=output_file, **default_kwargs_dict)
+        default_kwargs_dict.update(kwargs_dict)
 
+    with plt.rc_context():  # Use this to set figure params like size and dpi
+        sc.pl.umap(adata, color="cell_type", save=output_file, **default_kwargs_dict, show=False)
+        plt.savefig(output_file, bbox_inches="tight")
+    
 
 label = "cell_type"
 output_directory = output_dir
 output_prefix = prefix+"_geneformer_out"
 output_prefix_label = "_" + output_prefix + f"_umap_{label}"
-output_file = (Path(output_directory) / output_prefix_label).with_suffix(".pdf")
+output_file = (Path(output_directory) / output_prefix_label).with_suffix(".png")
 # data_directory.glob("*.{}".format(file_format))
 label_list = list(sc.read_h5ad(glob.glob(output_directory+"*.{}".format("h5ad"))[0]).obs["cell_type"])
 embs = pd.read_csv(output_dir+prefix+"_geneformer_out"+".csv", header=0, index_col=0)
 
 plot_umap(embs_df=embs, emb_dims=embs.shape[1], label=label_list, output_file=output_file, kwargs_dict=None)
+
+# the following need to check carefully.
+sklearn.metrics.silhouette_score(X=adata.uns['neighbors']['distances'], labels=label_list, metric="precomputed")
