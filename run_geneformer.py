@@ -7,8 +7,22 @@ import scanpy as sc
 # import pandas as pd
 # id_df = pd.read_csv("NSCLC_subsetted_raw_geneName_IDMapping.csv", header=0)
 #tem.var['ensembl_id'] = id_df['ensembl_id']
+# tem.var['ensembl_id'] = list(id_df['ensembl_id'])
 #tem.__dict__['_raw'].__dict__['_var'] = tem.__dict__['_raw'].__dict__['_var'].rename(columns={'_index': 'features'})
-#tem.write_h5ad("/mnt/pixstor/dbllab/suli/Alg_development/use_geneformer/data/NSCLC_subsetted/NSCLC_subsetted_raw.h5ad")
+#tem.write_h5ad("/mnt/pixstor/dbllab/suli/Alg_development/use_geneformer/data/NSCLC_subsetted/NSCLC_subsetted_raw.h5ad", compression='gzip')
+
+#tem = sc.read_h5ad("NSCLC_subsetted_raw.h5ad")
+#import pandas as pd
+#id_df = pd.read_csv("NSCLC_subsetted_raw_geneName_IDMapping.csv", header=0)
+#tem.var['ensembl_id'] = list(id_df['ensembl_id'])
+#tem.var[['_index', 'ensembl_id', 'features']].head()
+#tem.var_names = tem.var['features']
+#del tem.var['_index']
+#tem.var[[ 'ensembl_id', 'features']].head()
+#tem.write_h5ad("NSCLC_subsetted_raw.h5ad", compression='gzip')
+
+
+
 
 #input_dir = "/mnt/pixstor/dbllab/suli/Alg_development/use_geneformer/data/NSCLC_subsetted/"
 #output_dir = input_dir
