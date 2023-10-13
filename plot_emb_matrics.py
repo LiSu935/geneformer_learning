@@ -53,6 +53,10 @@ def plot_umap(embs_df, emb_dims, label, output_file, kwargs_dict):
     with plt.rc_context():  # Use this to set figure params like size and dpi
         sc.pl.umap(adata, color="cell_type", save=output_file, **default_kwargs_dict, show=False)
         plt.savefig(output_file, bbox_inches="tight")
+
+    return(adata)
+
+
     
 
 label = "cell_type"
@@ -64,7 +68,7 @@ output_file = (Path(output_directory) / output_prefix_label).with_suffix(".png")
 label_list = list(sc.read_h5ad(glob.glob(output_directory+"*.{}".format("h5ad"))[0]).obs["cell_type"])
 embs = pd.read_csv(glob.glob(output_dir+prefix+"_geneformer_out"+"*.csv")[0], header=0, index_col=0)
 
-plot_umap(embs_df=embs, emb_dims=embs.shape[1], label=label_list, output_file=output_file, kwargs_dict=None)
+adata = plot_umap(embs_df=embs, emb_dims=embs.shape[1], label=label_list, output_file=output_file, kwargs_dict=None)
 
 # the following need to check carefully.
 from sklearn.metrics import silhouette_score,silhouette_samples,davies_bouldin_score,calinski_harabasz_score
