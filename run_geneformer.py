@@ -3,8 +3,11 @@ from geneformer import TranscriptomeTokenizer
 # if previously wrote the 'ensembl_id', the following might not be necessary.
 import scanpy as sc 
 #tem = sc.read_h5ad("/mnt/pixstor/dbllab/suli/Alg_development/use_geneformer/data/NSCLC_subsetted/NSCLC_subsetted_raw.h5ad")
-#tem.var['ensembl_id'] = tem.var['features']
-#tem.__dict__['_raw'].__dict__['_var'] = tem.__dict__['_raw'].__dict__['_var'].rename(columns={'_index': 'ensembl_id'})
+# read the ensembl_id from the saved id mapping file:
+# import pandas as pd
+# id_df = pd.read_csv("NSCLC_subsetted_raw_geneName_IDMapping.csv", header=0)
+#tem.var['ensembl_id'] = id_df['ensembl_id']
+#tem.__dict__['_raw'].__dict__['_var'] = tem.__dict__['_raw'].__dict__['_var'].rename(columns={'_index': 'features'})
 #tem.write_h5ad("/mnt/pixstor/dbllab/suli/Alg_development/use_geneformer/data/NSCLC_subsetted/NSCLC_subsetted_raw.h5ad")
 
 #input_dir = "/mnt/pixstor/dbllab/suli/Alg_development/use_geneformer/data/NSCLC_subsetted/"
