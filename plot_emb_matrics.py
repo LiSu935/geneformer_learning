@@ -4,6 +4,23 @@ input_dir = "/mnt/pixstor/dbllab/suli/Alg_development/use_geneformer/data/NSCLC_
 output_dir = input_dir
 prefix = "NSCLC_subsetted"
 
+import getopt
+import argparse
+
+parser = argparse.ArgumentParser(description='Plotting the umap and compute the matrics.')
+
+parser.add_argument('--input_dir', type=str, default='/mnt/pixstor/dbllab/suli/Alg_development/use_geneformer/data/NSCLC_subsetted/', help='Directory of input: default(%(default)s).')
+parser.add_argument('--prefix', type=str, default='NSCLC_subsetted', help=' prefix of output files: default(%(default)s).')
+
+args = parser.parse_args()
+
+input_dir = args.input_dir
+prefix = args.prefix
+output_dir = input_dir
+
+
+
+
 import pandas as pd
 import scanpy as sc 
 from pathlib import Path
@@ -50,4 +67,17 @@ embs = pd.read_csv(output_dir+prefix+"_geneformer_out"+".csv", header=0, index_c
 plot_umap(embs_df=embs, emb_dims=embs.shape[1], label=label_list, output_file=output_file, kwargs_dict=None)
 
 # the following need to check carefully.
-sklearn.metrics.silhouette_score(X=adata.uns['neighbors']['distances'], labels=label_list, metric="precomputed")
+from sklearn.metrics import silhouette_score,silhouette_samples,davies_bouldin_score,calinski_harabasz_score
+
+sih_score = silhouette_score(X=adata.uns['neighbors']['distances'], labels=label_list, metric="precomputed")
+print(f"silhouette_score is {sih_score}")
+print(sih_score)
+
+sih_sample = silhouette_samples(X=adata.uns['neighbors']['distances'], labels=label_list, metric="precomputed")
+print(len(sih_sample))
+
+db_score = davies_bouldin_score(X=adata.uns['neighbors']['distances'], labels=label_list)
+print(f"davies_bouldin_score is {db_score}")
+
+ch_score = calinski_harabasz_score(X=adata.uns['neighbors']['distances'], labels=label_list)
+print(f"calinski_harabasz_score is {ch_score}")
