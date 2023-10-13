@@ -43,7 +43,7 @@ def plot_umap(embs_df, emb_dims, label, output_file, kwargs_dict):
     sc.tl.pca(adata, svd_solver='arpack')
     sc.pp.neighbors(adata)
     sc.tl.umap(adata)
-    sc.tl.louvain(adata)
+    #sc.tl.louvain(adata)
     sns.set(rc={'figure.figsize':(10,10)}, font_scale=2.3)
     sns.set_style("white")
     default_kwargs_dict = {"palette":"Set2", "size":200}
