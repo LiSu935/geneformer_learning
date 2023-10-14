@@ -1,8 +1,12 @@
 # this is only for plotting the umap and calculate matrics after computing the embedding
 
-input_dir = "/mnt/pixstor/dbllab/suli/Alg_development/use_geneformer/data/NSCLC_subsetted/"
-output_dir = input_dir
-prefix = "NSCLC_subsetted"
+#input_dir = "/mnt/pixstor/dbllab/suli/Alg_development/use_geneformer/data/NSCLC_subsetted/"
+#output_dir = input_dir
+#prefix = "NSCLC_subsetted"
+
+#input_dir = "/mnt/pixstor/dbllab/suli/Alg_development/use_geneformer/data/ms/ms_test_ori/"
+#output_dir = input_dir
+#prefix = "ms_test"
 
 import getopt
 import argparse
@@ -49,11 +53,9 @@ def plot_umap(embs_df, emb_dims, label, output_file, kwargs_dict):
     default_kwargs_dict = {"palette":"Set2", "size":200}
     if kwargs_dict is not None:
         default_kwargs_dict.update(kwargs_dict)
-
     with plt.rc_context():  # Use this to set figure params like size and dpi
         sc.pl.umap(adata, color="cell_type", save=output_file, **default_kwargs_dict, show=False)
         plt.savefig(output_file, bbox_inches="tight")
-
     return(adata)
 
 
@@ -73,15 +75,15 @@ adata = plot_umap(embs_df=embs, emb_dims=embs.shape[1], label=label_list, output
 # the following need to check carefully.
 from sklearn.metrics import silhouette_score,silhouette_samples,davies_bouldin_score,calinski_harabasz_score
 
-sih_score = silhouette_score(X=adata.uns['neighbors']['distances'], labels=label_list, metric="precomputed")
+sih_score = silhouette_score(X=adata.obsp['distances'], labels=label_list, metric="precomputed")
 print(f"silhouette_score is {sih_score}")
 print(sih_score)
 
-sih_sample = silhouette_samples(X=adata.uns['neighbors']['distances'], labels=label_list, metric="precomputed")
+sih_sample = silhouette_samples(X=adata.obsp['distances'], labels=label_list, metric="precomputed")
 print(len(sih_sample))
 
-db_score = davies_bouldin_score(X=adata.uns['neighbors']['distances'], labels=label_list)
+db_score = davies_bouldin_score(X=adata.obsp['distances'].toarray(), labels=label_list)
 print(f"davies_bouldin_score is {db_score}")
 
-ch_score = calinski_harabasz_score(X=adata.uns['neighbors']['distances'], labels=label_list)
+ch_score = calinski_harabasz_score(X=adata.obsp['distances'].toarray(), labels=label_list)
 print(f"calinski_harabasz_score is {ch_score}")
