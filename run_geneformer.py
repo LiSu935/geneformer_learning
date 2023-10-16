@@ -131,7 +131,7 @@ else:
     print("cell type info is not in the original h5ad file!! Please check!!!")
 label_list = list(tem.obs[label])
 
-embs = pd.read_csv(glob.glob(output_dir+prefix+"_geneformer_out"+"*.csv")[0], header=0, index_col=0)
+#embs = pd.read_csv(glob.glob(output_dir+prefix+"_geneformer_out"+"*.csv")[0], header=0, index_col=0)
 
 adata = plot_umap(embs_df=embs, emb_dims=embs.shape[1], label=label_list, output_file=output_file, kwargs_dict=None)
 
