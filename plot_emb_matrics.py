@@ -42,7 +42,7 @@ def plot_umap(embs_df, emb_dims, label, output_file, kwargs_dict):
     only_embs_df.columns = pd.RangeIndex(0, only_embs_df.shape[1], name=None).astype(str)
     vars_dict = {"embs": only_embs_df.columns}
     obs_dict = {"cell_id": list(only_embs_df.index),
-                "cell_type": label}
+                "celltype": label}
     adata = anndata.AnnData(X=only_embs_df, obs=obs_dict, var=vars_dict)
     sc.tl.pca(adata, svd_solver='arpack')
     sc.pp.neighbors(adata)
@@ -54,20 +54,20 @@ def plot_umap(embs_df, emb_dims, label, output_file, kwargs_dict):
     if kwargs_dict is not None:
         default_kwargs_dict.update(kwargs_dict)
     with plt.rc_context():  # Use this to set figure params like size and dpi
-        sc.pl.umap(adata, color="cell_type", save=output_file, **default_kwargs_dict, show=False)
+        sc.pl.umap(adata, color="celltype", save=output_file, **default_kwargs_dict, show=False)
         plt.savefig(output_file, bbox_inches="tight")
     return(adata)
 
 
     
 
-label = "cell_type"
+label = "celltype"
 output_directory = output_dir
 output_prefix = prefix+"_geneformer_out"
 output_prefix_label = "_" + output_prefix + f"_umap_{label}"
 output_file = (Path(output_directory) / output_prefix_label).with_suffix(".png")
 # data_directory.glob("*.{}".format(file_format))
-label_list = list(sc.read_h5ad(glob.glob(output_directory+"*.{}".format("h5ad"))[0]).obs["cell_type"])
+label_list = list(sc.read_h5ad(glob.glob(output_directory+"*.{}".format("h5ad"))[0]).obs["celltype"])
 embs = pd.read_csv(glob.glob(output_dir+prefix+"_geneformer_out"+"*.csv")[0], header=0, index_col=0)
 
 adata = plot_umap(embs_df=embs, emb_dims=embs.shape[1], label=label_list, output_file=output_file, kwargs_dict=None)
