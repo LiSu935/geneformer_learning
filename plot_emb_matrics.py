@@ -60,14 +60,20 @@ def plot_umap(embs_df, emb_dims, label, output_file, kwargs_dict):
 
 
     
-
 label = "celltype"
 output_directory = output_dir
 output_prefix = prefix+"_geneformer_out"
 output_prefix_label = "_" + output_prefix + f"_umap_{label}"
 output_file = (Path(output_directory) / output_prefix_label).with_suffix(".png")
 # data_directory.glob("*.{}".format(file_format))
-label_list = list(sc.read_h5ad(glob.glob(output_directory+"*.{}".format("h5ad"))[0]).obs["celltype"])
+tem = sc.read_h5ad(glob.glob(output_directory+"*.{}".format("h5ad"))[0])
+if "celltype" in tem.obs.keys():
+    label = "celltype"
+elif "cell_type" in tem.obs.keys():
+    label = "cell_type"
+else:
+    print("cell type info is not in the original h5ad file!! Please check!!!")
+label_list = list(tem.obs[label])
 embs = pd.read_csv(glob.glob(output_dir+prefix+"_geneformer_out"+"*.csv")[0], header=0, index_col=0)
 
 adata = plot_umap(embs_df=embs, emb_dims=embs.shape[1], label=label_list, output_file=output_file, kwargs_dict=None)
