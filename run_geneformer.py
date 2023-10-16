@@ -1,3 +1,22 @@
+#input_dir = "/home/lsxgf/tem/NSCLC_subsetted_741/"
+#output_dir = input_dir
+#prefix = "NSCLC_subsetted_741"
+
+import getopt
+import argparse
+
+parser = argparse.ArgumentParser(description='run_geneformer with raw data, Plotting the umap and compute the matrics.')
+
+parser.add_argument('--input_dir', type=str, default='/mnt/pixstor/dbllab/suli/Alg_development/use_geneformer/data/NSCLC_subsetted/', help='Directory of input: default(%(default)s).')
+parser.add_argument('--prefix', type=str, default='NSCLC_subsetted', help=' prefix of output files: default(%(default)s).')
+
+args = parser.parse_args()
+
+input_dir = args.input_dir
+prefix = args.prefix
+output_dir = input_dir
+
+
 from geneformer import TranscriptomeTokenizer
 
 # if previously wrote the 'ensembl_id', the following might not be necessary.
@@ -27,13 +46,6 @@ import scanpy as sc
 #input_dir = "/mnt/pixstor/dbllab/suli/Alg_development/use_geneformer/data/NSCLC_subsetted/"
 #output_dir = input_dir
 #prefix = "NSCLC_subsetted"
-
-
-
-input_dir = "/home/lsxgf/tem/NSCLC_subsetted_741/"
-output_dir = input_dir
-prefix = "NSCLC_subsetted_741"
-
 
 tk = TranscriptomeTokenizer(nproc=15)
 
@@ -103,8 +115,6 @@ def plot_umap(embs_df, emb_dims, label, output_file, kwargs_dict):
         plt.savefig(output_file, bbox_inches="tight")
     return(adata)
 
-
-    
 
 label = "celltype"
 output_directory = output_dir
