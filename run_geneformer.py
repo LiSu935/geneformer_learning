@@ -84,6 +84,7 @@ embs = embex.extract_embs("/mnt/pixstor/dbllab/suli/tools_related/geneformer/gen
 #                output_directory="path/to/output_directory/",  
 #                output_prefix="emb_plot")
 
+import pandas as pd
 from pathlib import Path
 import anndata
 import seaborn as sns
