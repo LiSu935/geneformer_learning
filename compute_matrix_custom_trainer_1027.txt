@@ -1,0 +1,76 @@
+# calculate weights
+#celltype_id_labels = adata.obs[celltype_key].astype("category").cat.codes.values
+class_num = np.unique(trainset_organ_subset["cell_type"], return_counts=True)[1].tolist()
+class_weight = torch.tensor([(1 - (x / sum(class_num))) ** 2 for x in class_num])
+print(class_weight)
+
+
+def compute_metrics(pred):
+    labels = pred.label_ids
+    preds = pred.predictions.argmax(-1)
+    # calculate balanced accuracy and weighted f1 using sklearn's function
+    #class_num = np.unique(labels, return_counts=True)[1].tolist()
+    #class_weight = [(1 - (x / sum(class_num))) ** 2 for x in class_num]
+    b_acc = balanced_accuracy_score(labels, preds, sample_weight=class_weight)
+    weighted_f1 = f1_score(labels, preds, average='weighted')
+    return {
+      'accuracy': b_acc,
+      'weighted_f1': weighted_f1
+    }
+
+
+
+
+# Add weight to the cross entropy loss function
+weighted_loss = nn.CrossEntropyLoss(weight=class_weight)
+
+
+class MyTrainer(Trainer):
+    # overwrite the function of compute_loss
+    def compute_loss(self, model, inputs, return_outputs=False):
+        outputs = model(**inputs)
+
+        # put loss to device
+        loss_fct = weighted_loss.to(outputs['logits'].device)
+
+        # calculate weighted loss
+        loss = loss_fct(outputs['logits'], inputs['labels'])
+
+        return (loss, outputs) if return_outputs else loss
+
+
+
+
+class CustomTrainer(Trainer):
+    def compute_loss(self, model, inputs, return_outputs=False):
+        labels = inputs.pop("labels")
+        # forward pass
+        outputs = model(**inputs)
+        logits = outputs.get("logits")
+        print(np.unique(logits.cpu()))
+        # compute custom loss (suppose one has 3 labels with different weights)
+        class_num = np.unique(labels.cpu(), return_counts=True)[1].tolist()
+        print(class_num)
+        class_weight = torch.tensor([(1 - (x / sum(class_num))) ** 2 for x in class_num])
+        loss_fct = nn.CrossEntropyLoss(weight=class_weight).to(outputs['logits'].device)
+        # loss_fct = nn.CrossEntropyLoss(weight=torch.tensor([1.0, 2.0, 3.0], device=model.device))
+        loss = loss_fct(outputs['logits'], labels)
+        return (loss, outputs) if return_outputs else loss
+        
+
+
+
+--> 347 check_consistent_length(y_true, y_pred, sample_weight)
+    349 n_labels = labels.size
+    350 # If labels are not consecutive integers starting from zero, then
+    351 # y_true and y_pred must be converted into index form
+
+File /mnt/pixstor/data/lsxgf/miniconda/envs/py-geneformer/lib/python3.8/site-packages/sklearn/utils/validation.py:407, in check_consistent_length(*arrays)
+    405 uniques = np.unique(lengths)
+    406 if len(uniques) > 1:
+--> 407     raise ValueError(
+    408         "Found input variables with inconsistent numbers of samples: %r"
+    409         % [int(l) for l in lengths]
+    410     )
+
+ValueError: Found input variables with inconsistent numbers of samples: [4906, 4906, 15]

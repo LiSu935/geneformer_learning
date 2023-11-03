@@ -4,13 +4,16 @@ os.environ["CUDA_VISIBLE_DEVICES"] = ",".join([str(s) for s in GPU_NUMBER])
 os.environ["NCCL_DEBUG"] = "INFO"
 
 # imports
+import numpy as np
+import torch
+from torch import nn
 from collections import Counter
 import datetime
 import pickle
 import subprocess
 import seaborn as sns; sns.set()
 from datasets import load_from_disk
-from sklearn.metrics import accuracy_score, f1_score
+from sklearn.metrics import balanced_accuracy_score, f1_score
 from transformers import BertForSequenceClassification
 from transformers import Trainer
 from transformers.training_args import TrainingArguments
@@ -47,7 +50,7 @@ for organ in Counter(train_dataset["organ_major"]).keys():
     # filter datasets for given organ
     def if_organ(example):
         return example["organ_major"] in organ_ids
-    trainset_organ = train_dataset.filter(if_organ, num_proc=16)
+    trainset_organ = train_dataset.filter(if_organ, num_proc=4)
     
     # per scDeepsort published method, drop cell types representing <0.5% of cells
     celltype_counter = Counter(trainset_organ["cell_type"])
@@ -95,23 +98,73 @@ for organ in Counter(train_dataset["organ_major"]).keys():
     dataset_list += [labeled_train_split]
     evalset_list += [labeled_eval_split_subset]
 
-#target_dict_list
+target_dict_list
 
 trainset_dict = dict(zip(organ_list,dataset_list))
 traintargetdict_dict = dict(zip(organ_list,target_dict_list))
 
 evalset_dict = dict(zip(organ_list,evalset_list))
 
+
+# calculate weights
+#celltype_id_labels = adata.obs[celltype_key].astype("category").cat.codes.values
+class_num = np.unique(trainset_organ_subset["cell_type"], return_counts=True)[1].tolist()
+class_weight = torch.tensor([(1 - (x / sum(class_num))) ** 2 for x in class_num])
+print(class_weight)
+
+
 def compute_metrics(pred):
     labels = pred.label_ids
     preds = pred.predictions.argmax(-1)
-    # calculate accuracy and macro f1 using sklearn's function
-    acc = accuracy_score(labels, preds)
-    macro_f1 = f1_score(labels, preds, average='macro')
+    # calculate balanced accuracy and weighted f1 using sklearn's function
+    #class_num = np.unique(labels, return_counts=True)[1].tolist()
+    #class_weight = [(1 - (x / sum(class_num))) ** 2 for x in class_num]
+    b_acc = balanced_accuracy_score(labels, preds, sample_weight=class_weight)
+    weighted_f1 = f1_score(labels, preds, average='weighted')
     return {
-      'accuracy': acc,
-      'macro_f1': macro_f1
+      'accuracy': b_acc,
+      'weighted_f1': weighted_f1
     }
+
+
+
+
+# Add weight to the cross entropy loss function
+weighted_loss = nn.CrossEntropyLoss(weight=class_weight)
+
+
+class MyTrainer(Trainer):
+    # overwrite the function of compute_loss
+    def compute_loss(self, model, inputs, return_outputs=False):
+        outputs = model(**inputs)
+
+        # put loss to device
+        loss_fct = weighted_loss.to(outputs['logits'].device)
+
+        # calculate weighted loss
+        loss = loss_fct(outputs['logits'], inputs['labels'])
+
+        return (loss, outputs) if return_outputs else loss
+
+
+
+
+class CustomTrainer(Trainer):
+    def compute_loss(self, model, inputs, return_outputs=False):
+        labels = inputs.pop("labels")
+        # forward pass
+        outputs = model(**inputs)
+        logits = outputs.get("logits")
+        print(np.unique(logits.cpu()))
+        # compute custom loss (suppose one has 3 labels with different weights)
+        class_num = np.unique(labels.cpu(), return_counts=True)[1].tolist()
+        print(class_num)
+        class_weight = torch.tensor([(1 - (x / sum(class_num))) ** 2 for x in class_num])
+        loss_fct = nn.CrossEntropyLoss(weight=class_weight).to(outputs['logits'].device)
+        # loss_fct = nn.CrossEntropyLoss(weight=torch.tensor([1.0, 2.0, 3.0], device=model.device))
+        loss = loss_fct(outputs['logits'], labels)
+        return (loss, outputs) if return_outputs else loss
+
 
 # Please note that, as usual with deep learning models, we highly recommend tuning learning hyperparameters for all fine-tuning applications as this can significantly improve model performance. Example hyperparameters are defined below, but please see the "hyperparam_optimiz_for_disease_classifier" script for an example of how to tune hyperparameters for downstream applications.
 
@@ -193,7 +246,7 @@ for organ in organ_list:
     training_args_init = TrainingArguments(**training_args)
 
     # create the trainer
-    trainer = Trainer(
+    trainer = MyTrainer(
         model=model,
         args=training_args_init,
         data_collator=DataCollatorForCellClassification(),
