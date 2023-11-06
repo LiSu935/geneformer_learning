@@ -41,9 +41,12 @@ gen_id_mapping_df = function(ORI_INPUT_DIR){
     rows_to_remove <- which(is.na(new_dataframe$ensembl_id) | new_dataframe$ensembl_id == "")
     
     # Remove rows with empty or NA row names
-    subset_dataframe <- new_dataframe[-rows_to_remove, ]
-
-    
+    if (length(rows_to_remove) != 0) {
+      subset_dataframe <- new_dataframe[-rows_to_remove, ]
+    } else {
+      subset_dataframe <- new_dataframe
+    }
+        
     # since multiple gene name refers to same ensembl id, have to 
     df_unique <- subset_dataframe[!duplicated(subset_dataframe$ensembl_id), ] 
     
